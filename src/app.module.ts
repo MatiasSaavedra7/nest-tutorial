@@ -1,15 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BooksService } from './books/books.service';
-import { BooksController } from './books/books.controller';
+// Modulos
+import { BooksModule } from './books/books.module';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
+// Configuracion del ORM
+import { configService } from './config/config.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(),
+    BooksModule,
+    TypeOrmModule.forRoot(
+      configService.getTypeOrmConfig(),
+    ),
   ],
-  controllers: [AppController, BooksController],
-  providers: [AppService, BooksService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

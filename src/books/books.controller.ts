@@ -11,35 +11,35 @@ import {
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import type { Request } from 'express';
-import { Book } from './book.class';
 import { BookDto } from './book.dto';
+import { Book } from './book.entity';
 
 @Controller('books')
 export class BooksController {
   constructor(private booksService: BooksService) {}
 
   @Get()
-  findAll(@Req() req: Request): Book[] {
-    return this.booksService.findAll(req.query);
+  async findAll(@Req() req: Request): Promise<Book[]> {
+    return await this.booksService.findAll(req.query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Book | string {
-    return this.booksService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<Book | string> {
+    return await this.booksService.findOne(id);
   }
 
   @Post()
-  create(@Body() newBook: BookDto): Book {
-    return this.booksService.create(newBook);
+  async create(@Body() newBook: BookDto): Promise<Book> {
+    return await this.booksService.create(newBook);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updatedBook: BookDto): Book | string {
-    return this.booksService.update(id, updatedBook);
+  async update(@Param('id') id: string, @Body() updatedBook: BookDto): Promise<Book> {
+    return await this.booksService.update(id, updatedBook);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string): Book | string {
-    return this.booksService.delete(id);
+  async delete(@Param('id') id: string): Promise<Book> {
+    return await this.booksService.delete(id);
   }
 }

@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, HttpStatus, HttpException } from '@nestjs/common';
 import { BookDto } from './book.dto';
 import { Book } from './book.class';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BooksService {
@@ -32,77 +34,41 @@ export class BooksService {
     }
   ]
 
-  findAll(params: any): Book[] { 
-    // let msg = `Method findAll() of BooksService working. Parameters: `;
+  constructor(
+    @InjectRepository(Book) private booksRepository: Repository<Book>
+  ) {}
 
-    // if (params.order !== undefined) {
-    //   msg += `order: ${params.order},`;
-    // }
-
-    // if (params.page !== undefined) {
-    //   msg += `page: ${params.page},`;
-    // }
-
-    // if (params.limit !== undefined) {
-    //   msg += `limit: ${params.limit},`;
-    // }
-
-    // if (params.search !== undefined) {
-    //   msg += `search: ${params.search}`;
-    // }
-
-    // return msg;
-    return this.books;
+  async findAll(params: any): Promise<Book[]> { 
+    return this.booksRepository.find();
   }
 
-  findOne(id: string): Book | string {
-    let book = this.books.find(book => book.id === Number(id));
-    if (!book) {
+  async findOne(id: string): Promise<Book | string> {
+    let book = await this.booksRepository.findOne({ where: { id: Number(id) }});
+
+    if (book === null) {
       throw new NotFoundException(`Book with id ${id} not found`);
     }
+    
     return book;
   }
 
-  create(newBook: BookDto): Book {
-    let book = new Book();
-
-    book.id = this.books.length + 1;
-    book.title = newBook.title;
-    book.genre = newBook.genre;
-    book.description = newBook.description;
-    book.author = newBook.author;
-    book.publisher = newBook.publisher;
-    book.pages = newBook.pages;
-    book.image_url = newBook.image_url;
-
-    this.books.push(book);
-    return book;
+  async create(newBook: BookDto): Promise<Book> {
+    return await this.booksRepository.save(newBook);
   }
 
-  update(id: string, updatedBook: BookDto): Book | string {
-    let book = this.books.find(book => book.id === Number(id));
-    if (!book) {
+  async update(id: string, newBook: BookDto): Promise<Book> {
+    let toUpdate = await this.booksRepository.findOne({ where: { id: Number(id) }});
+
+    if (toUpdate === null) {
       throw new NotFoundException(`Book with id ${id} not found`);
     }
 
-    if (book) {
-      book.title = updatedBook.title;
-      book.genre = updatedBook.genre;
-      book.description = updatedBook.description;
-      book.author = updatedBook.author;
-      book.publisher = updatedBook.publisher;
-      book.pages = updatedBook.pages;
-      book.image_url = updatedBook.image_url;
-    }
-    return book;
+    let updated = Object.assign(toUpdate, newBook);
+    
+    return this.booksRepository.save(updated);
   }
 
-  delete(id: string): Book | string {
-    let book = this.books.find(book => book.id === Number(id));
-    if (!book) {
-      throw new NotFoundException(`Book with id ${id} not found`);
-    }
-    this.books = this.books.filter(book => book.id !== Number(id));
-    return book;
+  async delete(id: string): Promise<any> {
+    return await this.booksRepository.delete({ id: Number(id) });
   }
 }
