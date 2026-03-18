@@ -17,7 +17,6 @@ import { Book } from './book.entity';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('books')
-// @UseGuards(AuthGuard('jwt'))
 export class BooksController {
   constructor(private booksService: BooksService) {}
 
@@ -27,7 +26,6 @@ export class BooksController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
   async findOne(@Param('id') id: string): Promise<Book | string> {
     return await this.booksService.findOne(id);
   }
